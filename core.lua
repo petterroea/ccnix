@@ -1,8 +1,14 @@
+--DOC ON RUNLEVELS
+--1 - Not logged in
+--2 - Terminal functionality
+--3 - Running a shell
 --Static variables
 version = "0.1"
 local session = "null"
-runlevel = 1
-
+local runlevel = 1
+local shellFunction = nil
+local workingPath = "/"
+local homePath = "/"
 --Logs some text
 function log(String)
 	print("["..os.clock().."]"..String)
@@ -26,6 +32,9 @@ end
 --Reads a line of text
 function readLine()
 	return read()
+end
+function setShell(Shell)
+	shellFunction = Shell
 end
 --Converts cc color to ccnix color
 function toCcnixColor(Col)
@@ -52,7 +61,7 @@ function readPassword()
 	while true do
 		local pressed = os.pullEvent("char")
 		if pressed == "\n" then break end
-		toReturn = toReturn + pressed
+		toReturn = toReturn .. pressed
 	end
 	return toReturn
 end
@@ -64,6 +73,7 @@ end
 local function checkLogin()
 	return true --Temp
 end
+--Startup block
 log("ccnix "..version)
 if os.getComputerLabel() == nil then
 	log("This computer has no label! Setting default label...")
@@ -71,7 +81,7 @@ if os.getComputerLabel() == nil then
 end
 local i = 0
 while runlevel > 0 do
-	if runlevel == 1 do
+	if runlevel == 1 then
 		printText(os.getComputerLabel() .. " login: ")
 		local username = readLine()
 		printLine("")
@@ -81,11 +91,17 @@ while runlevel > 0 do
 			session = username
 			runlevel = 2
 		else
-	
+			printLine("Incorrect password!")
 		end
 	end
-	
+	if runLevel == 2 then
+		local pathString = workingPath
+		if pathString == homePath then pathString = "~" end
+		printText(username .. "@" .. os.getComputerLabel() .. ":" .. pathString .. ":")
+	end
+	if runlevel == 3 then
+		shellFunction()
+	end
 end
-
 log("Halting...")
 os.shutdown()
