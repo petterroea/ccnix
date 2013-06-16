@@ -1,6 +1,7 @@
 --Setup program
 --Color palette
 local bgColor = 1024
+local errBgColor = 16384
 local fgColor = 256
 local textColor = 32768
 local selectedColor = 16384
@@ -147,6 +148,44 @@ function renderPromptDialog(Text, Title)
 	end
 	return returnable
 end
+function renderPasswordDialog(Text, Title)
+	renderDialog(Text, Title)
+	setBgColor(bgColor)
+	setColor(fgColor)
+	local markerAt = 1
+	local returnable = ""
+	while true do
+		term.setCursorPos(6, height-4)
+		for i=0,width-12,1 do
+			if i == markerAt then 
+				setBgColor(textColor) 
+			else 
+				setBgColor(bgColor) 
+			end
+			if string.len(returnable) > i then
+				term.write("*")
+			else
+				term.write("_")
+			end
+		end
+		event, param1 = os.pullEvent()
+		if event == "key" then
+			if param1 == 28 then
+				break
+			end
+			if param1 == 14 then
+				if string.len(returnable)>0 then
+					returnable = string.sub(returnable,0,string.len(returnable)-1)
+					markerAt = markerAt - 1
+				end
+			end
+		elseif (event == "char") and (markerAt<16) then
+			returnable = returnable .. param1
+			markerAt = markerAt + 1
+		end
+	end
+	return returnable
+end
 function downloadFile(Url, To)
 
 	local fileHandle = fs.open(To, "w")
@@ -163,14 +202,27 @@ function makeDir(dir)
 end
 renderDialog({"Checking requirements", "", "Please wait..."}, "ccnix") -- Placeholder
 sleep(3)
-username = renderPromptDialog({"What do you want your username to be?"}, "Username")
+local username = renderPromptDialog({"What do you want your username to be?"}, "Username")
+local password = ""
+while true do
+	password = renderPasswordDialog({"What do you want your password to be?"}, "Password")
+	local repeatPasswd = renderPasswordDialog({"Repeat your password"}, "Password")
+	if password == repeatPasswd then break end
+	bgColor = errBgColor
+	renderOkDialog({"The passwords didn't match!"}, "Error")
+	bgColor = 1024
+end
 renderOkDialog({"ccnix will now be installed"}, "Notice")
-renderProgressDialog({"Creating filesystem", "please wait..."}, "Installing", 0)
+renderProgressDialog({"Creating filesystem...", "", "please wait..."}, "Installing", 0)
 makeDir("/home")
 makeDir("/home/" .. username)
 makeDir("/bin")
 makeDir("/usr")
 makeDir("/lib")
-renderProgressDialog({"Downloading core files", "please wait..."}, "Installing", 50)
+renderProgressDialog({"Creating filesystem...", "Downloading core files", "", "please wait..."}, "Installing", 20)
 downloadFile("https://raw.github.com/petterroea/ccnix/master/core.lua", "/bin/core")
 downloadFile("https://raw.github.com/petterroea/ccnix/master/startup.lua", "/startup")
+renderProgressDialog({"Creating filesystem...", "Downloading core files","Setting up users...", "", "please wait..."}, "Installing", 50)
+local passWdHandle = fs.open("/bin/usr", "w")
+passWdHandle.writeLine("userDatabase = {{" .. username .. ", " .. password .. "}}")
+passWdHandle.close()

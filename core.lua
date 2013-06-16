@@ -74,7 +74,12 @@ local function checkLogin()
 	return true --Temp
 end
 --Startup block
+term.clear()
+term.setCursorPos(1,1)
 log("ccnix "..version)
+log("Loading user list")
+os.loadAPI("/bin/usr")
+log(usr.userDatabase)
 if os.getComputerLabel() == nil then
 	log("This computer has no label! Setting default label...")
 	os.setComputerLabel("ccnix")
