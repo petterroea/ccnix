@@ -79,7 +79,7 @@ term.setCursorPos(1,1)
 log("ccnix "..version)
 log("Loading user list")
 os.loadAPI("/bin/usr")
-for key,value in pairs(usr.userDatabase) do print(key,value) end
+for key,value in pairs(usr.userDatabase) do print(key,pairs(usr.userDatabase[key]) end
 if os.getComputerLabel() == nil then
 	log("This computer has no label! Setting default label...")
 	os.setComputerLabel("ccnix")
