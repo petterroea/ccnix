@@ -1,6 +1,7 @@
 --Static variables
 version = "0.1"
 local session = "null"
+runlevel = 1
 
 --Logs some text
 function log(String)
@@ -21,6 +22,10 @@ end
 --Changes Background color
 function setBgColor(Color)
 	term.setBackgroundColor(Color)
+end
+--Reads a line of text
+function readLine()
+	return read()
 end
 --Converts cc color to ccnix color
 function toCcnixColor(Col)
@@ -51,10 +56,36 @@ function readPassword()
 	end
 	return toReturn
 end
+--Checks if the user is root
 function isRoot()
 	return session == "root"
 end
-
+--Checks login
+local function checkLogin()
+	return true --Temp
+end
 log("ccnix "..version)
-printLine(os.getComputerLabel() .. " login: ")
-local username = read()
+if os.getComputerLabel() == nil then
+	log("This computer has no label! Setting default label...")
+	os.setComputerLabel("ccnix")
+end
+local i = 0
+while runlevel > 0 do
+	if runlevel == 1 do
+		printText(os.getComputerLabel() .. " login: ")
+		local username = readLine()
+		printLine("")
+		printText(username .. "@" .. os.getComputerLabel() .. "'s password:")
+		local pass = readPassword()
+		if checkLogin(username, pass) then
+			session = username
+			runlevel = 2
+		else
+	
+		end
+	end
+	
+end
+
+log("Halting...")
+os.shutdown()
